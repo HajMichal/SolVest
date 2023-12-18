@@ -1,8 +1,11 @@
 import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Colors from "../../constants/Colors";
 import { Icon } from "@rneui/themed";
 import { MotiView } from "moti";
+import { useAuth } from "../../context/authContext";
+import axios from "axios";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -41,7 +44,30 @@ function DialPad({ onPress }: { onPress: (item: (typeof dialPad)[number]) => voi
 }
 
 export default function pincode() {
+  
+  const router = useRouter()
+
   const [code, setCode] = useState<number[]>([]);
+  const { onPinCode, userData, authState  } = useAuth()
+ 
+  
+  useEffect(() => {
+    const handlePinCode = async () => {
+      if (code.length === 4 && userData){
+        await onPinCode!(Number(code.join('')), userData.userId!)
+      }
+      if (userData?.userId === null) {
+        router.push("/auth/login")
+      }
+    }
+    handlePinCode()
+  }, [code, userData])
+
+useEffect(() => {
+  if(!authState?.authenticated) {
+    router.push("/auth/login")
+  }
+}, [authState])
 
   return (
     <View style={styles.container}>

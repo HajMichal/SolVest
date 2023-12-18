@@ -4,13 +4,25 @@ import * as SecureStore from "expo-secure-store";
 import { BASE_URL } from "@env";
 import { useRouter } from "expo-router";
 
+
+interface UserData {
+  userId: number | null; 
+  name: string | null; 
+  email: string | null; 
+  role: number | null
+}
+interface AuthState {
+  token: string | null; authenticated: boolean | null 
+}
 interface AuthProps {
-  authState?: { token: string | null; authenticated: boolean | null };
+  authState?: AuthState;
+  userData?: UserData
   onRegister?: (email: string, password: string, name: string, country: string) => Promise<any>;
   onLogin?: (email: string, password: string) => Promise<any>;
   onPinCode?: (pincode: number, userId: number) => Promise<any>;
   onLogout?: () => Promise<any>;
 }
+
 
 const AuthContext = createContext<AuthProps>({});
 
@@ -20,10 +32,18 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: any) => {
   const router = useRouter();
-  const [authState, setAuthState] = useState<{
-    token: string | null;
-    authenticated: boolean | null;
-  }>({ token: null, authenticated: null });
+
+  const [authState, setAuthState] = useState<AuthState> ({ 
+    token: null, 
+    authenticated: null 
+  });
+  const [userData, setUserData] = useState<UserData> ({
+    userId:null, 
+    name: null, 
+    email: null, 
+    role: null
+  })
+
 
   useEffect(() => {
     const loadToken = async () => {
@@ -54,15 +74,18 @@ export const AuthProvider = ({ children }: any) => {
         email: email,
         password: password,
       });
-
+      const data = result.data.result
+      setUserData({userId: data.id, email: data.email, name: data.name, role: data.role})
       setAuthState({
         token: result.data.access_token,
         authenticated: true,
       });
       router.push("/auth/pincode");
+
       // automaticly adds Authorization Bearer token to request
-      axios.defaults.headers.common["Authorization"] = `Bearer ${result.data.token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${result.data.access_token}`;
       axios.defaults.headers.common["Content-Type"] = "Application/Json";
+
       await SecureStore.setItemAsync("ACCESS_TOKEN", result.data.access_token);
       await SecureStore.setItemAsync("REFRESH_TOKEN", result.data.refresh_token);
       return result.data;
@@ -72,6 +95,7 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   const pincode = async (pincode: number, userId: number) => {
+
     try {
       const result = await axios.post(`${BASE_URL}/auth/pinValidation/${userId}`, {
         pincode: pincode,
@@ -98,6 +122,7 @@ export const AuthProvider = ({ children }: any) => {
     onPinCode: pincode,
     onLogout: logout,
     authState,
+    userData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
