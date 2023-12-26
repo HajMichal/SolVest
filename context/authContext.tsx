@@ -10,6 +10,7 @@ interface UserData {
   name: string | null; 
   email: string | null; 
   role: number | null
+  pincode: number | null
 }
 interface AuthState {
   token: string | null; authenticated: boolean | null 
@@ -19,7 +20,7 @@ interface AuthProps {
   userData?: UserData
   onRegister?: (email: string, password: string, name: string, country: string) => Promise<any>;
   onLogin?: (email: string, password: string) => Promise<any>;
-  onPinCode?: (pincode: number, userId: number) => Promise<any>;
+  onPinCode?: (pincode: number, userId: number, isSettingPinCode?: boolean) => Promise<any>;
   onLogout?: () => Promise<any>;
 }
 
@@ -41,7 +42,8 @@ export const AuthProvider = ({ children }: any) => {
     userId:null, 
     name: null, 
     email: null, 
-    role: null
+    role: null,
+    pincode: null
   })
 
 
@@ -62,7 +64,10 @@ export const AuthProvider = ({ children }: any) => {
 
   const register = async (email: string, password: string, name: string, country: string) => {
     try {
-      return await axios.post(`${BASE_URL}/auth/register`, { email, password, country, name });
+      const result = await axios.post(`${BASE_URL}/auth/register`, { email, password, country, name });
+      const data = result.data.result
+      setUserData({userId: data.id, email: data.email, name: data.name, role: data.role, pincode: data.pincode})
+      return result
     } catch (error) {
       return error;
     }
@@ -75,10 +80,10 @@ export const AuthProvider = ({ children }: any) => {
         password: password,
       });
       const data = result.data.result
-      setUserData({userId: data.id, email: data.email, name: data.name, role: data.role})
+      setUserData({userId: data.id, email: data.email, name: data.name, role: data.role, pincode: data.pincode})
       setAuthState({
         token: result.data.access_token,
-        authenticated: true,
+        authenticated: false,
       });
       router.push("/auth/pincode");
 
@@ -94,17 +99,28 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  const pincode = async (pincode: number, userId: number) => {
+  const pincode = async (pincode: number, userId: number, isSettingPinCode = false) => {
 
     try {
-      const result = await axios.post(`${BASE_URL}/auth/pinValidation/${userId}`, {
-        pincode: pincode,
+      const result = isSettingPinCode 
+        ? await axios.patch(`${BASE_URL}/auth/setPinCode/${userId}`, {
+            pincode: pincode,
+          }) 
+        : await axios.post(`${BASE_URL}/auth/pinValidation/${userId}`, {
+            pincode: pincode,
+          });
+      setAuthState({
+        token: authState.token,
+        authenticated: true,
       });
+      router.push("/home");
       router.push("/home");
       return result;
     } catch (error) {
       return error;
     }
+
+
   };
 
   const logout = async () => {

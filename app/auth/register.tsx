@@ -17,13 +17,14 @@ export default function register() {
   const register = async () => {
     const result = await onRegister!(email, password, name, country);
 
-    if (result & result.error) {
+    if (result && result.error) {
       alert(result.msg);
     }
-    console.log(result.result[1]);
-    if (result.response.status === 200) {
-      router.push("/auth/login");
+
+    if (result.status === 200) {
+      router.push("/auth/pincode");
     }
+    return result
   };
 
   useEffect(() => {
