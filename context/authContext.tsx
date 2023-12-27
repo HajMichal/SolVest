@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: any) => {
       setUserData({userId: data.id, email: data.email, name: data.name, role: data.role, pincode: data.pincode})
       setAuthState({
         token: result.data.access_token,
-        authenticated: false,
+        authenticated: true,
       });
       router.push("/auth/pincode");
 

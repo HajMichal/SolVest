@@ -8,7 +8,7 @@ export default function Index() {
   const { authState } = useAuth();
   return (
     <NavigationContainer independent={true}>
-      {authState?.authenticated ? <Redirect href="/home" /> : <Redirect href="/auth/login" />}
+      {authState?.authenticated ? <Redirect href="/(mainTabs)/home" /> : <Redirect href="/auth/login" />}
     </NavigationContainer>
   );
 }

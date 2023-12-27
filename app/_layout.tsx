@@ -39,21 +39,16 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
-  // #TODO LIST
-  // create login/register system without styling
-  // setting pincode after correctly register
-  // set initial entry to register sub page
-  // create simple navigation between pages
+
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
         <Stack>
           <Stack.Screen
-            name="home"
+            name="(mainTabs)"
             options={{
-              headerShown: true,
-              headerLeft: () => <></>,
+              headerShown: false,
             }}
           />
           <Stack.Screen

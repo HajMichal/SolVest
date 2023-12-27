@@ -1,7 +1,7 @@
 import { Button, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import Colors from "../constants/Colors";
-import { useAuth } from "../context/authContext";
+import Colors from "../../constants/Colors";
+import { useAuth } from "../../context/authContext";
 
 export default function Home() {
   const { onLogout } = useAuth();
